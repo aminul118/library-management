@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api", bookRouter);
+app.use("/api", borrowRouter);
 
 app.get("/", (req, res) => {
   res.json({

@@ -1,7 +1,5 @@
 import { Schema, model, Model } from "mongoose";
-import { IBook, BookInstanceMethods } from "./book.interface";
-
-type BookModel = Model<IBook, {}, BookInstanceMethods>;
+import { IBook, BookInstanceMethods, BookModel } from "./book.interface";
 
 const bookSchema = new Schema<IBook, BookModel, BookInstanceMethods>(
   {

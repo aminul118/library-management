@@ -14,9 +14,9 @@ const createBook = async (req: Request, res: Response) => {
   }
 };
 
-const getBooks = async (_req: Request, res: Response) => {
+const getBooks = async (req: Request, res: Response) => {
   try {
-    const data = await BookService.getBooks();
+    const data = await BookService.getBooks(req.query); 
     res
       .status(200)
       .json({ success: true, message: "Books retrieved successfully", data });

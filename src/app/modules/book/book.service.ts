@@ -1,13 +1,30 @@
 import Book from "./book.model";
-import { IBook } from "./book.interface";
+import { IBook, IGetBooksPayload } from "./book.interface";
 
 const createBook = async (payload: IBook) => {
   const newBook = new Book(payload);
   return await newBook.save();
 };
 
-const getBooks = async () => {
-  return await Book.find();
+const getBooks = async (query: IGetBooksPayload) => {
+  const { filter, sortBy = "createdAt", sort = "desc", limit = "10" } = query;
+
+  const filterQuery: Record<string, any> = {};
+
+  if (filter) {
+    filterQuery.genre = filter;
+  }
+
+  const sortOrder: 1 | -1 = sort === "asc" ? 1 : -1;
+  const sortQuery: Record<string, 1 | -1> = {
+    [sortBy]: sortOrder,
+  };
+
+  const books = await Book.find(filterQuery)
+    .sort(sortQuery)
+    .limit(Number(limit));
+
+  return books;
 };
 
 const getBookById = async (id: string) => {

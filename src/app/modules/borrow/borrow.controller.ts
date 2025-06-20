@@ -1,26 +1,40 @@
+// src/app/modules/borrow/borrow.controller.ts
 import { Request, Response } from "express";
-import borrowServices from "./borrow.service";
+import { BorrowService } from "./borrow.service";
 
-const createBorrow = async (req: Request, res: Response) => {
+const borrowBook = async (req: Request, res: Response) => {
   try {
-    const data = await borrowServices.createBorrow(req.body);
-
-    return res.status(201).json({
+    const result = await BorrowService.borrowBook(req.body);
+    res.status(201).json({
       success: true,
       message: "Book borrowed successfully",
-      data,
+      data: result,
     });
-  } catch (error) {
-    return res.status(500).json({
+  } catch (err: any) {
+    res.status(400).json({
       success: false,
-      message: "Validation failed",
-      error,
+      message: err.message || "Book borrowing failed",
     });
   }
 };
 
-const borrowController = {
-  createBorrow,
+const getBorrowSummary = async (_req: Request, res: Response) => {
+  try {
+    const result = await BorrowService.getBorrowSummary();
+    res.status(200).json({
+      success: true,
+      message: "Borrowed books summary retrieved successfully",
+      data: result,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to get borrowed books summary",
+    });
+  }
 };
 
-export default borrowController;
+export const BorrowController = {
+  borrowBook,
+  getBorrowSummary,
+};

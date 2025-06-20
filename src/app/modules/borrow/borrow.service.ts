@@ -1,39 +1,54 @@
+// src/app/modules/borrow/borrow.service.ts
 import Borrow from "./borrow.model";
 import Book from "../book/book.model";
 import { IBorrow } from "./borrow.interface";
-import { Types } from "mongoose";
 
-const createBorrow = async (payload: IBorrow) => {
-  const { book, quantity, dueDate } = payload;
+const borrowBook = async (payload: IBorrow) => {
+  const { book: bookId, quantity, dueDate } = payload;
 
-  const existingBook = await Book.findById(book);
-  if (!existingBook) {
-    throw new Error("Book not found");
-  }
+  const book = await Book.findById(bookId);
+  if (!book) throw new Error("Book not found");
+  if (book.copies < quantity) throw new Error("Not enough copies available");
 
-  if (existingBook.copies < quantity) {
-    throw new Error("Not enough copies available");
-  }
+  book.copies -= quantity;
+  if (book.copies === 0) book.available = false;
+  await book.save();
 
-  existingBook.copies -= quantity;
-
-  if (existingBook.copies === 0) {
-    existingBook.available = false;
-  }
-
-  await existingBook.save();
-
-  const borrowRecord = await Borrow.create({
-    book: new Types.ObjectId(book),
-    quantity,
-    dueDate,
-  });
-
+  const borrowRecord = await Borrow.create({ book: bookId, quantity, dueDate });
   return borrowRecord;
 };
 
-const borrowServices = {
-  createBorrow,
+const getBorrowSummary = async () => {
+  return Borrow.aggregate([
+    {
+      $group: {
+        _id: "$book",
+        totalQuantity: { $sum: "$quantity" },
+      },
+    },
+    {
+      $lookup: {
+        from: "books",
+        localField: "_id",
+        foreignField: "_id",
+        as: "bookInfo",
+      },
+    },
+    { $unwind: "$bookInfo" },
+    {
+      $project: {
+        _id: 0,
+        book: {
+          title: "$bookInfo.title",
+          isbn: "$bookInfo.isbn",
+        },
+        totalQuantity: 1,
+      },
+    },
+  ]);
 };
 
-export default borrowServices;
+export const BorrowService = {
+  borrowBook,
+  getBorrowSummary,
+};

@@ -11,13 +11,29 @@ const bookSchema = new Schema<IBook>(
       type: String,
       required: [true, "Author  is required"],
     },
+    genre: {
+      type: String,
+      enum: {
+        values: [
+          "FICTION",
+          "NON_FICTION",
+          "SCIENCE",
+          "HISTORY",
+          "BIOGRAPHY",
+          "FANTASY",
+        ],
+        message: "{value} is not supported",
+      },
+      uppercase: true,
+    },
     isbn: {
       type: String,
+      unique: true,
       required: [true, "ISBN is required"],
     },
     description: {
       type: String,
-      required: [true, "Description is required"],
+      default: "",
     },
     copies: {
       type: Number,
@@ -27,6 +43,7 @@ const bookSchema = new Schema<IBook>(
     available: {
       type: Boolean,
       required: [true, "Available is required"],
+      default: true,
     },
   },
   {

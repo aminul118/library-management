@@ -13,7 +13,8 @@ const createBook = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(404).json({
       success: false,
-      message: "Book created failed",
+      message: "Validation failed",
+      error,
     });
   }
 };

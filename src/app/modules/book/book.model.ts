@@ -1,7 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import { IBook } from "./book.interface";
+import { Schema, model, Model } from "mongoose";
+import { IBook, BookInstanceMethods } from "./book.interface";
 
-const bookSchema = new Schema<IBook>(
+type BookModel = Model<IBook, {}, BookInstanceMethods>;
+
+const bookSchema = new Schema<IBook, BookModel, BookInstanceMethods>(
   {
     title: {
       type: String,
@@ -9,7 +11,7 @@ const bookSchema = new Schema<IBook>(
     },
     author: {
       type: String,
-      required: [true, "Author  is required"],
+      required: [true, "Author is required"],
     },
     genre: {
       type: String,
@@ -22,7 +24,7 @@ const bookSchema = new Schema<IBook>(
           "BIOGRAPHY",
           "FANTASY",
         ],
-        message: "{value} is not supported",
+        message: "{VALUE} is not a valid genre",
       },
       uppercase: true,
     },
@@ -38,12 +40,12 @@ const bookSchema = new Schema<IBook>(
     copies: {
       type: Number,
       min: 0,
-      required: [true, "Copies required"],
+      required: [true, "Copies are required"],
     },
     available: {
       type: Boolean,
-      required: [true, "Available is required"],
       default: true,
+      required: true,
     },
   },
   {
@@ -52,6 +54,16 @@ const bookSchema = new Schema<IBook>(
   }
 );
 
-const Book = mongoose.model<IBook>("Book", bookSchema);
+bookSchema.method("updateCopies", async function (quantity: number) {
+  if (this.copies < quantity) {
+    throw new Error("Not enough copies available");
+  }
+  this.copies -= quantity;
+  if (this.copies === 0) {
+    this.available = false;
+  }
+  await this.save();
+});
 
+const Book = model<IBook, BookModel>("Book", bookSchema);
 export default Book;

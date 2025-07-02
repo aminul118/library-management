@@ -3,7 +3,11 @@ import cors from "cors";
 import router from "./app/routes";
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "live-deploy-url"],
+  })
+);
 app.use(express.json());
 
 app.use(router);
